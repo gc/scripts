@@ -17,17 +17,13 @@ sshd -T | grep -q "^permitrootlogin no" || { echo "FAIL: PermitRootLogin not set
 sshd -T | grep -q "^passwordauthentication no" || { echo "FAIL: PasswordAuthentication not set to no"; exit 1; }
 echo "RootLogin/PasswordAuth OFF ✓"
 
+# ufw
 ufw status | grep -q "Status: active" || { echo "FAIL: UFW is not active"; exit 1; }
 echo "UFW active ✓"
 
-if [ "$(id -u)" -eq 0 ] && [ -n "$SUDO_USER" ]; then
-  CURRENT_LIMIT=$(sudo -u "$SUDO_USER" bash -c 'ulimit -n')
-  TARGET_USER="$SUDO_USER"
-else
-  CURRENT_LIMIT=$(ulimit -n)
-  TARGET_USER="$USER"
-fi
-
+# ulimit
+TARGET_USER="${SUDO_USER:-$USER}"
+CURRENT_LIMIT=$(sudo -u "$TARGET_USER" bash -c 'ulimit -n')
 [ "$CURRENT_LIMIT" -ge "$EXPECTED_ULIMIT" ] || {
   echo "FAIL: ulimit -n for $TARGET_USER is $CURRENT_LIMIT, expected >= $EXPECTED_ULIMIT"
   exit 1
