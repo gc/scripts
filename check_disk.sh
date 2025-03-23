@@ -18,7 +18,7 @@ while read -r name fstype mountpoint; do
   [ -z "$fstype" ] && continue
   case "$fstype" in
     ext[2-4])
-      dumpe2fs -h "$dev" >/dev/null 2>&1 || error "Filesystem error on $dev"
+      dumpe2fs -b "$dev" >/dev/null 2>&1 || error "Filesystem error on $dev"
       ;;
     xfs)
       command -v xfs_info &>/dev/null || warn "xfs_info not found"
