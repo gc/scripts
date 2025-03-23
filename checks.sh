@@ -22,7 +22,7 @@ echo "UFW active ✓"
 
 TARGET_USER="${SUDO_USER:-$USER}"
 CURRENT_LIMIT=$(sudo -u "$TARGET_USER" bash -c 'ulimit -n')
-[ "$CURRENT_LIMIT" -ge "$EXPECTED_ULIMIT" ] || { echo "FAIL: ulimit -n is $CURRENT_LIMIT, expected >= $EXPECTED_ULIMIT"; exit 1; }
+[ "$CURRENT_LIMIT" -ge "$EXPECTED_ULIMIT" ] || { echo "FAIL: ulimit -n for $TARGET_USER is $CURRENT_LIMIT, expected >= $EXPECTED_ULIMIT"; exit 1; }
 echo "ulimit $CURRENT_LIMIT ✓"
 
 HOSTNAME=$(hostname)
