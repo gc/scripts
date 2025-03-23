@@ -20,9 +20,18 @@ echo "RootLogin/PasswordAuth OFF ✓"
 ufw status | grep -q "Status: active" || { echo "FAIL: UFW is not active"; exit 1; }
 echo "UFW active ✓"
 
-TARGET_USER="${SUDO_USER:-$USER}"
-CURRENT_LIMIT=$(sudo -u "$TARGET_USER" bash -c 'ulimit -n')
-[ "$CURRENT_LIMIT" -ge "$EXPECTED_ULIMIT" ] || { echo "FAIL: ulimit -n for $TARGET_USER is $CURRENT_LIMIT, expected >= $EXPECTED_ULIMIT"; exit 1; }
+if [ "$(id -u)" -eq 0 ] && [ -n "$SUDO_USER" ]; then
+  CURRENT_LIMIT=$(sudo -u "$SUDO_USER" bash -c 'ulimit -n')
+  TARGET_USER="$SUDO_USER"
+else
+  CURRENT_LIMIT=$(ulimit -n)
+  TARGET_USER="$USER"
+fi
+
+[ "$CURRENT_LIMIT" -ge "$EXPECTED_ULIMIT" ] || {
+  echo "FAIL: ulimit -n for $TARGET_USER is $CURRENT_LIMIT, expected >= $EXPECTED_ULIMIT"
+  exit 1
+}
 echo "ulimit $CURRENT_LIMIT ✓"
 
 HOSTNAME=$(hostname)
