@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Source NVM and rustup if available
+[ -s "$HOME/.nvm/nvm.sh" ] && . "$HOME/.nvm/nvm.sh"
+[ -s "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+
+echo "--------------------------------"
+echo "SYSTEM CONFIGURATION AND VERSIONS"
+echo "--------------------------------"
+printf "Hostname: %s\n" "$(hostname)"
+printf "IP Addresses: %s\n" "$(ip addr show | grep "inet " | awk '{print $2}' | grep -v "127.0.0.1" | tr '\n' ' ')"
+printf "Kernel: %s\n" "$(uname -a)"
+printf "Debian Version: %s\n" "$(cat /etc/debian_version)"
+printf "CPU: %s\n" "$(lscpu | grep "Model name" | cut -d: -f2 | sed 's/^[ \t]*//')"
+printf "Total RAM: %s\n" "$(grep MemTotal /proc/meminfo | awk '{print $2/1024 " MB"}')"
+printf "Memory Usage: %s\n" "$(free -h | grep "Mem:" | awk '{print $3 " / " $2}')"
+printf "Disk Space: %s\n" "$(df -h | grep -v "tmpfs" | awk 'NR>1 {print $5 " used of " $2 " on " $6}' | tr '\n' '; ')"
+printf "Current User: %s\n" "$(whoami)"
+printf "Uptime: %s\n" "$(uptime -p)"
+printf "OS Release: %s\n" "$(cat /etc/os-release | grep PRETTY_NAME | cut -d= -f2 | sed 's/"//g')"
+printf "PostgreSQL Version: %s\n" "$(which psql >/dev/null 2>&1 && psql --version || echo "Not installed")"
+printf "Rust Version: %s\n" "$(if which rustc >/dev/null 2>&1; then rustc --version; elif [ -f "$HOME/.cargo/bin/rustc" ]; then "$HOME/.cargo/bin/rustc" --version; else echo "Not installed"; fi)"
+printf "Node.js Version: %s\n" "$(if which node >/dev/null 2>&1; then node --version; elif [ -f "$HOME/.nvm/versions/node/$(ls -t "$HOME/.nvm/versions/node" 2>/dev/null | head -1)/bin/node" ]; then "$HOME/.nvm/versions/node/$(ls -t "$HOME/.nvm/versions/node" 2>/dev/null | head -1)/bin/node" --version; else echo "Not installed"; fi)"
+printf "pnpm Version: %s\n" "$(if which pnpm >/dev/null 2>&1; then pnpm --version; elif [ -f "$HOME/.nvm/versions/node/$(ls -t "$HOME/.nvm/versions/node" 2>/dev/null | head -1)/bin/pnpm" ]; then "$HOME/.nvm/versions/node/$(ls -t "$HOME/.nvm/versions/node" 2>/dev/null | head -1)/bin/pnpm" --version; else echo "Not installed"; fi)"
+printf "Listening Ports: %s\n" "$(netstat -tuln 2>/dev/null || ss -tuln | tail -n +2 | awk '{print $4}' | tr '\n' ' ')"
