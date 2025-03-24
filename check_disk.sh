@@ -29,12 +29,12 @@ while read -r name fstype mountpoint; do
         fi
       ;;
   esac
-done < <(lsblk -o NAME,FSTYPE,MOUNTPOINT -n)
+done < <(lsblk -r -o NAME,FSTYPE,MOUNTPOINT -n)
 
 echo "Checking unmounted partitions..."
-for name in $(lsblk -o NAME -n | grep -E "^[sv]d[a-z][0-9]"); do
+for name in $(lsblk -r -o NAME -n | grep -E "^[sv]d[a-z][0-9]"); do
   dev="/dev/$name"
-  if ! mountpoint -q "$(lsblk -n -o MOUNTPOINT "$dev" 2>/dev/null)" 2>/dev/null; then
+  if ! mountpoint -q "$(lsblk -r -n -o MOUNTPOINT "$dev" 2>/dev/null)" 2>/dev/null; then
     if ! out=$(fsck -n "$dev" 2>&1); then
       error "Filesystem error on $dev: $out"
     fi
@@ -45,7 +45,7 @@ echo "Checking partition layout..."
 if ! command -v parted &>/dev/null; then
   warn "parted not installed, skipping partition checks"
 else
-  for disk in $(lsblk -d -o NAME -n | grep -E "^[sv]d[a-z]"); do
+  for disk in $(lsblk -r -d -o NAME -n | grep -E "^[sv]d[a-z]"); do
     parted -s "/dev/$disk" print >/dev/null 2>&1 || error "Partition table error on /dev/$disk"
   done
 fi
