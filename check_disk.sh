@@ -18,11 +18,15 @@ while read -r name fstype mountpoint; do
   [ -z "$fstype" ] && continue
   case "$fstype" in
     ext[2-4])
-      dumpe2fs -b "$dev" >/dev/null 2>&1 || error "Filesystem error on $dev"
+        if ! out=$(dumpe2fs -b "$dev" 2>&1); then
+          error "Filesystem error on $dev: $out"
+        fi
       ;;
     xfs)
       command -v xfs_info &>/dev/null || warn "xfs_info not found"
-      xfs_info "$mountpoint" >/dev/null 2>&1 || error "Filesystem error on $dev"
+        if ! out=$(xfs_info "$mountpoint" 2>&1); then
+          error "Filesystem error on $dev: $out"
+        fi
       ;;
   esac
 done < <(lsblk -o NAME,FSTYPE,MOUNTPOINT -n)
@@ -31,7 +35,9 @@ echo "Checking unmounted partitions..."
 for name in $(lsblk -o NAME -n | grep -E "^[sv]d[a-z][0-9]"); do
   dev="/dev/$name"
   if ! mountpoint -q "$(lsblk -n -o MOUNTPOINT "$dev" 2>/dev/null)" 2>/dev/null; then
-    fsck -n "$dev" >/dev/null 2>&1 || error "Filesystem error on $dev"
+    if ! out=$(fsck -n "$dev" 2>&1); then
+      error "Filesystem error on $dev: $out"
+    fi
   fi
 done
 
